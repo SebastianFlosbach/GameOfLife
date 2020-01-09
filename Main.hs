@@ -1,12 +1,15 @@
 module Main where
 
+-- Imports
 import Graphics.Gloss
 import Graphics.Gloss.Data.ViewPort
 
+-- Types
 type Position = (Int, Int)
 type Coordinates = (Float, Float)
 type Game = [Position]
 
+-- Defines
 windowTitle :: String
 windowTitle = "Game Of Life"
 
@@ -21,6 +24,7 @@ window = InWindow windowTitle (gameWidth * cellSize * 2, gameHeight * cellSize *
 background :: Color
 background = black
 
+-- Functions
 toWorldCoords :: Position -> Coordinates
 toWorldCoords (x,y) = (fromIntegral(x * cellSize), fromIntegral(y * cellSize))
 
@@ -69,11 +73,16 @@ isAliveNextTurn pos game
 updateGame :: ViewPort -> Float -> Game -> Game
 updateGame _ _ game = [(x,y) | x <- [0..(gameWidth-1)], y <- [0..(gameHeight-1)], isAliveNextTurn (x,y) game]
 
+-- Rendering
+renderBox :: Picture
+renderBox = translate' (moveOrigin $ toWorldCoords(gameWidth, gameHeight)) $ color white $ rectangleWire (fromIntegral(gameWidth * cellSize)) (fromIntegral(gameHeight * cellSize))
+
 renderGame :: Game -> Picture
 renderGame game = pictures (renderBox : [renderCell pos | pos <- game])
  where renderCell :: Position -> Picture
        renderCell (x,y) = translate' (toWorldCoords (x,y)) $ color green $ rectangleSolid (fromIntegral cellSize) (fromIntegral cellSize)
 
+-- Game Initializers
 initStatic :: Game
 initStatic = [(0,0),(0,1),(1,0),(1,1)]
 
@@ -93,8 +102,7 @@ combineGames (x:y:xs) = combineGames ([x ++ [pos | pos <- y, not $ elem pos x]] 
 moveOrigin :: Coordinates -> Coordinates
 moveOrigin (x,y) = (x / 2 - ((fromIntegral cellSize) / 2), y / 2 - ((fromIntegral cellSize) / 2))
 
-renderBox :: Picture
-renderBox = translate' (moveOrigin $ toWorldCoords(gameWidth, gameHeight)) $ color white $ rectangleWire (fromIntegral(gameWidth * cellSize)) (fromIntegral(gameHeight * cellSize))
 
+-- Main
 main :: IO ()
 main = simulate window background 10 initGame renderGame updateGame
